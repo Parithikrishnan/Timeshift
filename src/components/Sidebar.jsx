@@ -6,14 +6,6 @@ function Sidebar() {
   const links = [
     { name: "Dashboard", path: "/dashboard", icon: "🏠" },
     { name: "Clock In/Out", path: "/time-tracker", icon: "⏱️" },
-    { name: "My Sessions", path: "/worklogs", icon: "📋" },
-    { name: "Timesheet", path: "/timesheet", icon: "📅" },
-    { name: "Breaks", path: "/breaks", icon: "☕" },
-    { name: "Leave Requests", path: "/leave", icon: "📝" },
-    { name: "Profile", path: "/profile", icon: "👤" },
-    { name: "Notifications", path: "/notifications", icon: "🔔" },
-    { name: "Analytics", path: "/analytics", icon: "📊" },
-    { name: "Export", path: "/export", icon: "📄" },
   ];
 
   return (

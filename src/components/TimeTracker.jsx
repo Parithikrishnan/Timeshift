@@ -1,152 +1,130 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import "../styles/TimeTracker.css";
 
 function TimeTracker() {
-  const [isClockedIn, setIsClockedIn] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const [mouseActivity, setMouseActivity] = useState(0);
-  const [notes, setNotes] = useState("");
-  const [sessions, setSessions] = useState([]);
+  const [startTime, setStartTime] = useState(null);
+  const [pauseStart, setPauseStart] = useState(null);
+  const [pauseDuration, setPauseDuration] = useState(0);
+  const [pauseCount, setPauseCount] = useState(0);
+  const [logs, setLogs] = useState([]);
+  const [totalDuration, setTotalDuration] = useState(0);
 
-  const timerRef = useRef(null);
-  const sessionStartRef = useRef(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalAction, setModalAction] = useState("");
+  const [modalNote, setModalNote] = useState("");
 
-  const startTimer = () => {
-    if (!isClockedIn) {
-      setIsClockedIn(true);
-      setIsPaused(false);
-      sessionStartRef.current = new Date();
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
-    }
+  const formatDuration = (ms) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    return `${hrs}h ${mins}m ${secs}s`;
   };
 
-  const pauseTimer = () => {
-    if (isClockedIn) {
+  const handleClockIn = () => {
+    const now = new Date();
+    setStartTime(now);
+    setIsRunning(true);
+    setLogs([{ type: "Clock In", time: now.toLocaleTimeString(), note: "Day started" }]);
+    setPauseCount(0);
+    setPauseDuration(0);
+    setTotalDuration(0);
+  };
+
+  const openModal = (action) => {
+    setModalAction(action);
+    setModalNote("");
+    setModalVisible(true);
+  };
+
+  const submitModal = () => {
+    const now = new Date();
+    if (modalAction === "Pause") {
+      setPauseStart(now);
       setIsPaused(true);
-      clearInterval(timerRef.current);
-    }
-  };
+      setPauseCount((prev) => prev + 1);
+      setLogs((prev) => [...prev, { type: "Pause", time: now.toLocaleTimeString(), note: modalNote }]);
+    } else if (modalAction === "Clock Out") {
+      const duration = now - startTime - pauseDuration;
+      const newLog = { type: "Clock Out", time: now.toLocaleTimeString(), note: modalNote, duration };
+      setLogs((prev) => [...prev, newLog]);
+      setTotalDuration(duration);
 
-  const resumeTimer = () => {
-    if (isClockedIn && isPaused) {
+      // Reset all session states to default for next session
+      setIsRunning(false);
       setIsPaused(false);
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
+      setStartTime(null);
+      setPauseStart(null);
+      setPauseDuration(0);
+      setPauseCount(0);
     }
+    setModalVisible(false);
   };
 
-  const clockOut = () => {
-    if (isClockedIn) {
-      const sessionEnd = new Date();
-      const duration = seconds;
-
-      const newSession = {
-        start: sessionStartRef.current.toLocaleTimeString(),
-        end: sessionEnd.toLocaleTimeString(),
-        duration,
-        notes,
-        mouseActivity,
-      };
-
-      setSessions([newSession, ...sessions]);
-      setIsClockedIn(false);
-      setIsPaused(false);
-      clearInterval(timerRef.current);
-      setSeconds(0);
-      setMouseActivity(0);
-      setNotes("");
-    }
-  };
-
-  useEffect(() => {
-    const handleMouseMove = () => {
-      if (isClockedIn && !isPaused) {
-        setMouseActivity((prev) => prev + 1);
-      }
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [isClockedIn, isPaused]);
-
-  const formatTime = (sec) => {
-    const hrs = Math.floor(sec / 3600);
-    const mins = Math.floor((sec % 3600) / 60);
-    const seconds = sec % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  const handleResume = () => {
+    if (!isPaused) return;
+    const now = new Date();
+    const pauseDiff = now - pauseStart;
+    setPauseDuration((prev) => prev + pauseDiff);
+    setIsPaused(false);
+    setLogs((prev) => [...prev, { type: "Resume", time: now.toLocaleTimeString(), note: "Work resumed" }]);
   };
 
   return (
-    <div className="time-tracker-page">
-      <div className="tracker-left">
-        <h2>Time Tracker</h2>
+    <div className="time-tracker-container">
+      {/* Left Panel */}
+      <div className="left-panel">
+        <h1 className="title">Time Tracker</h1>
 
-        <div className="clock-display">
-          <span className={`timer ${isPaused ? "paused" : ""}`}>
-            {formatTime(seconds)}
-          </span>
+        <div className="btn-group">
+          {!isRunning && <button className="btn start" onClick={handleClockIn}>Clock In</button>}
+          {isRunning && !isPaused && <button className="btn pause" onClick={() => openModal("Pause")}>Pause</button>}
+          {isPaused && <button className="btn resume" onClick={handleResume}>Resume</button>}
+          {isRunning && <button className="btn stop" onClick={() => openModal("Clock Out")}>Clock Out</button>}
         </div>
 
-        <textarea
-          className="notes"
-          placeholder="Add notes for this session..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-
-        <div className="tracker-buttons">
-          {!isClockedIn && (
-            <button className="clock-btn clock-in" onClick={startTimer}>
-              Clock In
-            </button>
-          )}
-          {isClockedIn && !isPaused && (
-            <button className="clock-btn pause" onClick={pauseTimer}>
-              Pause
-            </button>
-          )}
-          {isClockedIn && isPaused && (
-            <button className="clock-btn resume" onClick={resumeTimer}>
-              Resume
-            </button>
-          )}
-          {isClockedIn && (
-            <button className="clock-btn clock-out" onClick={clockOut}>
-              Clock Out
-            </button>
-          )}
-        </div>
-
-        <div className="mouse-activity">
-          Mouse Movements: <span>{mouseActivity}</span>
+        <div className="summary">
+          <h2>Summary</h2>
+          <p><span>Start Time:</span> {startTime ? startTime.toLocaleTimeString() : "--"}</p>
+          <p><span>Total Pauses:</span> {pauseCount}</p>
+          <p><span>Pause Duration:</span> {formatDuration(pauseDuration)}</p>
+          <p><span>Total Work:</span> {totalDuration > 0 ? formatDuration(totalDuration) : "--"}</p>
         </div>
       </div>
 
-      <div className="tracker-right">
-        <h3>Previous Sessions</h3>
-        {sessions.length === 0 && <p>No sessions yet.</p>}
-        {sessions.map((s, index) => (
-          <div key={index} className="session-card">
-            <p>
-              <strong>Start:</strong> {s.start} | <strong>End:</strong> {s.end}
-            </p>
-            <p>
-              <strong>Duration:</strong> {formatTime(s.duration)}
-            </p>
-            <p>
-              <strong>Notes:</strong> {s.notes || "None"}
-            </p>
-            <p>
-              <strong>Mouse Movements:</strong> {s.mouseActivity}
-            </p>
+      {/* Right Panel */}
+      <div className="right-panel">
+        <h2>Daily Log</h2>
+        <ul>
+          {logs.map((log, idx) => (
+            <li key={idx}>
+              <div className="log-header">
+                <span className="log-type">{log.type}</span>
+                <span className="log-time">{log.time}</span>
+              </div>
+              {log.note && <p className="log-note">💬 {log.note}</p>}
+              {log.duration && <p className="log-duration">⏳ {formatDuration(log.duration)}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Modal */}
+      {modalVisible && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>{modalAction} Note</h3>
+            <textarea
+              placeholder="Describe your task..."
+              value={modalNote}
+              onChange={(e) => setModalNote(e.target.value)}
+            />
+            <button className="btn submit" onClick={submitModal}>Submit</button>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
