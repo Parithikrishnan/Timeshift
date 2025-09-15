@@ -1,0 +1,54 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import "../styles/Login.css";
+
+function Login({ onLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin(email, password);
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1 className="auth-app-title">Time Tracker</h1>
+        <h2 className="auth-title">Login to your account</h2>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="input-group">
+            <input
+              type="email"
+              placeholder=" "
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <label>Email</label>
+          </div>
+
+          <div className="input-group">
+            <input
+              type="password"
+              placeholder=" "
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <label>Password</label>
+          </div>
+
+          <button type="submit" className="auth-btn">Login</button>
+        </form>
+
+        <div className="auth-links">
+          <p>Don't have an account? <Link to="/register">Register</Link></p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Login;

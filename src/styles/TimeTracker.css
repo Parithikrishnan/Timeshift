@@ -1,0 +1,110 @@
+.time-tracker-page {
+  display: flex;
+  gap: 30px;
+  padding: 30px;
+  max-width: 1200px;
+  margin: 20px auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.tracker-left {
+  flex: 1;
+  background-color: #000;
+  color: #00ffff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+.tracker-left h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(0,255,255,0.5);
+}
+
+.clock-display {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+.timer.paused {
+  color: #ff4d4d;
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.7);
+}
+
+@keyframes pulse {
+  0%, 100% { text-shadow: 0 0 15px rgba(0,255,255,0.5); }
+  50% { text-shadow: 0 0 35px rgba(0,255,255,0.7); }
+}
+
+.notes {
+  width: 90%;
+  padding: 8px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: 1px solid #00ffff;
+  background-color: #111;
+  color: #00ffff;
+  resize: none;
+  font-size: 1rem;
+}
+
+.tracker-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.clock-btn {
+  padding: 12px 25px;
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #000;
+}
+
+.clock-in { background-color: #00ffff; box-shadow: 0 0 15px rgba(0,255,255,0.6); }
+.clock-in:hover { background-color: #00e6e6; }
+
+.pause { background-color: #ff4d4d; box-shadow: 0 0 15px rgba(255,77,77,0.6); }
+.pause:hover { background-color: #ff1a1a; }
+
+.resume { background-color: #00ffff; box-shadow: 0 0 15px rgba(0,255,255,0.6); }
+.resume:hover { background-color: #00e6e6; }
+
+.clock-out { background-color: #ffaa00; box-shadow: 0 0 15px rgba(255,170,0,0.6); }
+.clock-out:hover { background-color: #ff9900; }
+
+.mouse-activity { margin-top: 10px; font-size: 1rem; color: #fff; text-align: center; }
+
+.tracker-right {
+  flex: 1;
+  background-color: #111;
+  color: #00ffff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0,255,255,0.3);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.tracker-right h3 {
+  margin-bottom: 20px;
+  text-shadow: 0 0 8px rgba(0,255,255,0.4);
+}
+
+.session-card {
+  background-color: #000;
+  padding: 15px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,255,255,0.2);
+  margin-bottom: 15px;
+  box-shadow: 0 0 15px rgba(0,255,255,0.1);
+}

@@ -1,0 +1,25 @@
+/* App container (wraps all pages) */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #000000; /* Keep consistent pure black */
+  color: #ffffff;
+}
+
+/* Main content area */
+.app-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Optional: simple header/footer if added later */
+.app-header, .app-footer {
+  text-align: center;
+  padding: 15px;
+  background-color: #111111; /* Subtle contrast */
+  border-bottom: 1px solid #222;
+}
