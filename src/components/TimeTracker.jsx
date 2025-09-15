@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import "../styles/TimeTracker.css";
+import { db } from "../firebase"; 
+import { collection, addDoc } from "firebase/firestore";
 
-function TimeTracker() {
+function TimeTracker({ user }) {
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [startTime, setStartTime] = useState(null);
@@ -14,6 +16,16 @@ function TimeTracker() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalAction, setModalAction] = useState("");
   const [modalNote, setModalNote] = useState("");
+
+  // Firestore function to save entire session
+  const thing = async (sessionData) => {
+    try {
+      await addDoc(collection(db, "time-duration"), sessionData);
+      console.log("Session saved to Firestore:", sessionData);
+    } catch (error) {
+      console.error("Error saving session:", error);
+    }
+  };
 
   const formatDuration = (ms) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -45,20 +57,34 @@ function TimeTracker() {
       setPauseStart(now);
       setIsPaused(true);
       setPauseCount((prev) => prev + 1);
-      setLogs((prev) => [...prev, { type: "Pause", time: now.toLocaleTimeString(), note: modalNote }]);
+      const newLog = { type: "Pause", time: now.toLocaleTimeString(), note: modalNote };
+      setLogs((prev) => [...prev, newLog]);
     } else if (modalAction === "Clock Out") {
       const duration = now - startTime - pauseDuration;
       const newLog = { type: "Clock Out", time: now.toLocaleTimeString(), note: modalNote, duration };
-      setLogs((prev) => [...prev, newLog]);
+      const fullSession = [...logs, newLog];
+      setLogs(fullSession);
       setTotalDuration(duration);
 
-      // Reset all session states to default for next session
+      // Save entire session to Firestore
+      thing({
+        user: user.email,
+        sessionStart: startTime.toLocaleTimeString(),
+        sessionEnd: now.toLocaleTimeString(),
+        totalWorkDuration: duration,
+        pauseDuration: pauseDuration,
+        pauseCount: pauseCount,
+        logs: fullSession
+      });
+
+      // Reset all session states
       setIsRunning(false);
       setIsPaused(false);
       setStartTime(null);
       setPauseStart(null);
       setPauseDuration(0);
       setPauseCount(0);
+      setTotalDuration(0);
     }
     setModalVisible(false);
   };
@@ -69,7 +95,8 @@ function TimeTracker() {
     const pauseDiff = now - pauseStart;
     setPauseDuration((prev) => prev + pauseDiff);
     setIsPaused(false);
-    setLogs((prev) => [...prev, { type: "Resume", time: now.toLocaleTimeString(), note: "Work resumed" }]);
+    const newLog = { type: "Resume", time: now.toLocaleTimeString(), note: "Work resumed" };
+    setLogs((prev) => [...prev, newLog]);
   };
 
   return (

@@ -1,25 +1,189 @@
-/* App container (wraps all pages) */
-.app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: #000000; /* Keep consistent pure black */
-  color: #ffffff;
+/* app.css */
+
+/* Global Styles */
+:root {
+  --primary-color: #007bff; /* Blue */
+  --secondary-color: #6c757d; /* Gray */
+  --success-color: #28a745; /* Green */
+  --danger-color: #dc3545; /* Red */
+  --warning-color: #ffc107; /* Yellow */
+  --info-color: #17a2b8; /* Cyan */
+  --light-color: #f8f9fa; /* Light Gray */
+  --dark-color: #343a40; /* Dark Gray */
+
+  --bg-dark-blue: #1a202c; /* Dark background for overall app */
+  --card-bg-dark: #2d3748; /* Slightly lighter dark for cards */
+  --text-light: #e2e8f0; /* Light text color */
+  --border-dark: #4a5568; /* Border color */
+  --input-bg-dark: #4a5568; /* Input background */
+  --input-text-dark: #e2e8f0; /* Input text color */
 }
 
-/* Main content area */
-.app-content {
-  flex: 1;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-dark-blue);
+  color: var(--text-light);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column; /* Allows content to stack vertically */
   padding: 20px;
+  box-sizing: border-box; /* Include padding in element's total width and height */
 }
 
-/* Optional: simple header/footer if added later */
-.app-header, .app-footer {
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Auth Container (for Login/Register pages) */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 450px; /* Limit the width of the auth card container */
+  margin: auto; /* Center the container itself */
+}
+
+.auth-card {
+  background-color: var(--card-bg-dark);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
   text-align: center;
-  padding: 15px;
-  background-color: #111111; /* Subtle contrast */
-  border-bottom: 1px solid #222;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-app-title {
+  font-size: 2.5em;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.auth-title {
+  font-size: 1.8em;
+  color: var(--text-light);
+  margin-bottom: 30px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Space between input groups */
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 15px; /* Additional space between input groups if gap isn't enough */
+}
+
+.input-group input {
+  width: 100%;
+  padding: 15px 12px;
+  border: 1px solid var(--border-dark);
+  border-radius: 8px;
+  background-color: var(--input-bg-dark);
+  color: var(--input-text-dark);
+  font-size: 1em;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+/* Floating Label for Inputs */
+.input-group label {
+  position: absolute;
+  top: 15px;
+  left: 12px;
+  color: var(--secondary-color);
+  pointer-events: none;
+  transition: 0.2s ease all;
+  background-color: transparent;
+  padding: 0 4px; /* Padding for the label when it moves up */
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+  top: -10px;
+  font-size: 0.8em;
+  color: var(--primary-color);
+  background-color: var(--card-bg-dark); /* Match card background */
+  left: 8px; /* Adjust left position when elevated */
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 15px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 15px; /* Space above button */
+}
+
+.auth-btn:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+  transform: translateY(-2px);
+}
+
+.auth-btn:active {
+  transform: translateY(0);
+}
+
+.auth-links {
+  margin-top: 30px;
+  font-size: 0.95em;
+  color: var(--secondary-color);
+}
+
+.auth-links a {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 30px 20px;
+    margin: 10px; /* Add some margin on smaller screens */
+  }
+
+  .auth-app-title {
+    font-size: 2em;
+  }
+
+  .auth-title {
+    font-size: 1.5em;
+  }
+
+  .auth-btn {
+    font-size: 1em;
+    padding: 12px 15px;
+  }
 }

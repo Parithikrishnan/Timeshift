@@ -8,7 +8,7 @@ function Login({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin(email, password);
+    onLogin(email, password); // <-- Firebase login happens in parent
   };
 
   return (
@@ -42,10 +42,6 @@ function Login({ onLogin }) {
 
           <button type="submit" className="auth-btn">Login</button>
         </form>
-
-        <div className="auth-links">
-          <p>Don't have an account? <Link to="/register">Register</Link></p>
-        </div>
       </div>
     </div>
   );
