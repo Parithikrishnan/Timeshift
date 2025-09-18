@@ -1,3 +1,4 @@
+// ...other imports
 import React, { useState } from "react";
 import "../styles/TimeTracker.css";
 import { db } from "../firebase"; 
@@ -17,22 +18,32 @@ function TimeTracker({ user }) {
   const [modalAction, setModalAction] = useState("");
   const [modalNote, setModalNote] = useState("");
 
-  // Firestore function to save entire session
-  const thing = async (sessionData) => {
-    try {
-      await addDoc(collection(db, "time-duration"), sessionData);
-      console.log("Session saved to Firestore:", sessionData);
-    } catch (error) {
-      console.error("Error saving session:", error);
-    }
-  };
-
+  // Format duration helper
   const formatDuration = (ms) => {
     const totalSeconds = Math.floor(ms / 1000);
     const hrs = Math.floor(totalSeconds / 3600);
     const mins = Math.floor((totalSeconds % 3600) / 60);
     const secs = totalSeconds % 60;
     return `${hrs}h ${mins}m ${secs}s`;
+  };
+
+  // Get date in DD/MM/YYYY format
+  const getTodayDate = () => {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, "0");
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const year = now.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Save session to Firestore
+  const saveSession = async (sessionData) => {
+    try {
+      await addDoc(collection(db, "time-duration"), sessionData);
+      console.log("Session saved:", sessionData);
+    } catch (error) {
+      console.error("Error saving session:", error);
+    }
   };
 
   const handleClockIn = () => {
@@ -60,24 +71,25 @@ function TimeTracker({ user }) {
       const newLog = { type: "Pause", time: now.toLocaleTimeString(), note: modalNote };
       setLogs((prev) => [...prev, newLog]);
     } else if (modalAction === "Clock Out") {
-      const duration = now - startTime - pauseDuration;
-      const newLog = { type: "Clock Out", time: now.toLocaleTimeString(), note: modalNote, duration };
+      const workDuration = now - startTime - pauseDuration;
+      const newLog = { type: "Clock Out", time: now.toLocaleTimeString(), note: modalNote, duration: workDuration };
       const fullSession = [...logs, newLog];
       setLogs(fullSession);
-      setTotalDuration(duration);
+      setTotalDuration(workDuration);
 
-      // Save entire session to Firestore
-      thing({
+      // Save session with date in DD/MM/YYYY format
+      saveSession({
         user: user.email,
+        date: getTodayDate(),  // <-- Human-readable date
         sessionStart: startTime.toLocaleTimeString(),
         sessionEnd: now.toLocaleTimeString(),
-        totalWorkDuration: duration,
+        totalWorkDuration: workDuration,
         pauseDuration: pauseDuration,
         pauseCount: pauseCount,
-        logs: fullSession
+        logs: fullSession,
       });
 
-      // Reset all session states
+      // Reset
       setIsRunning(false);
       setIsPaused(false);
       setStartTime(null);
@@ -86,6 +98,7 @@ function TimeTracker({ user }) {
       setPauseCount(0);
       setTotalDuration(0);
     }
+
     setModalVisible(false);
   };
 
@@ -104,14 +117,12 @@ function TimeTracker({ user }) {
       {/* Left Panel */}
       <div className="left-panel">
         <h1 className="title">Time Tracker</h1>
-
         <div className="btn-group">
           {!isRunning && <button className="btn start" onClick={handleClockIn}>Clock In</button>}
           {isRunning && !isPaused && <button className="btn pause" onClick={() => openModal("Pause")}>Pause</button>}
           {isPaused && <button className="btn resume" onClick={handleResume}>Resume</button>}
           {isRunning && <button className="btn stop" onClick={() => openModal("Clock Out")}>Clock Out</button>}
         </div>
-
         <div className="summary">
           <h2>Summary</h2>
           <p><span>Start Time:</span> {startTime ? startTime.toLocaleTimeString() : "--"}</p>

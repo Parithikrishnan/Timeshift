@@ -8,7 +8,7 @@ function Login({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin(email, password); // <-- Firebase login happens in parent
+    onLogin(email, password); 
   };
 
   return (

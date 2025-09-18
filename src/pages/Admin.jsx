@@ -1,113 +1,106 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../firebase";
+import React, { useEffect, useState } from "react";
+import { auth, db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { signOut } from "firebase/auth";
 import "../styles/Admin.css";
 
 function Admin() {
   const [employees, setEmployees] = useState({});
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // Fetch all time-duration logs
+  // Fetch all sessions grouped by user email and date
+  const fetchEmployees = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "time-duration"));
+      const data = {};
+
+      querySnapshot.forEach((doc) => {
+        const entry = doc.data();
+        if (!data[entry.user]) data[entry.user] = {};
+        const date = entry.date || "Unknown Date";
+        if (!data[entry.user][date]) data[entry.user][date] = [];
+        data[entry.user][date].push({ id: doc.id, ...entry });
+      });
+
+      setEmployees(data);
+    } catch (error) {
+      console.error("Error fetching employee logs:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "time-duration"));
-        const data = {};
-
-        querySnapshot.forEach((doc) => {
-          const entry = doc.data();
-          if (!data[entry.user]) {
-            data[entry.user] = [];
-          }
-          data[entry.user].push({ id: doc.id, ...entry });
-        });
-
-        setEmployees(data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
+    fetchEmployees();
   }, []);
 
-  // Format ms → h m s
-  const formatDuration = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hrs = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    return `${hrs}h ${mins}m ${secs}s`;
+  // Logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      window.location.reload();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
+
+  const openModal = (user) => setSelectedUser(user);
+  const closeModal = () => setSelectedUser(null);
 
   return (
     <div className="admin-container">
-      <h1>Admin Dashboard</h1>
-      <p className="subtitle">All Employees & Work Sessions</p>
+      <header className="admin-header">
+        <h1>Admin Panel</h1>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
+      </header>
 
-      <div className="employee-list">
+      <section className="employee-list">
+        <h2>Employees</h2>
         {Object.keys(employees).length === 0 ? (
-          <p>No employee data available.</p>
+          <p>No employee details found.</p>
         ) : (
-          Object.keys(employees).map((userEmail) => (
-            <div
-              key={userEmail}
-              className="employee-card"
-              onClick={() => setSelectedUser(userEmail)}
-            >
-              <h3>{userEmail}</h3>
-              <p>{employees[userEmail].length} session(s) logged</p>
-            </div>
-          ))
+          <ul>
+            {Object.keys(employees).map((user) => (
+              <li key={user} onClick={() => openModal(user)}>
+                {user}
+              </li>
+            ))}
+          </ul>
         )}
-      </div>
+      </section>
 
-      {/* Modal for details */}
+      {/* Modal */}
       {selectedUser && (
-        <div className="modal-backdrop" onClick={() => setSelectedUser(null)}>
-          <div
-            className="modal"
-            onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
-          >
-            <h2>{selectedUser}'s Sessions</h2>
-            <ul className="session-list">
-              {employees[selectedUser].map((session) => (
-                <li key={session.id} className="session-card">
-                  <p>
-                    <strong>Start:</strong> {session.sessionStart}
-                  </p>
-                  <p>
-                    <strong>End:</strong> {session.sessionEnd}
-                  </p>
-                  <p>
-                    <strong>Total Work:</strong>{" "}
-                    {formatDuration(session.totalWorkDuration)}
-                  </p>
-                  <p>
-                    <strong>Pause Duration:</strong>{" "}
-                    {formatDuration(session.pauseDuration)}
-                  </p>
-                  <p>
-                    <strong>Pauses:</strong> {session.pauseCount}
-                  </p>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="close-btn" onClick={closeModal}>✖</button>
+            <h2>{selectedUser}</h2>
 
-                  <details>
-                    <summary>Logs</summary>
-                    <ul>
-                      {session.logs.map((log, idx) => (
-                        <li key={idx}>
-                          <span>{log.type} at {log.time}</span>
-                          {log.note && <p>💬 {log.note}</p>}
+            {Object.keys(employees[selectedUser]).map((date) => (
+              <div key={date} className="date-group">
+                <h3>Date: {date}</h3>
+                {employees[selectedUser][date].map((session, idx) => (
+                  <div key={session.id} className="session-card">
+                    <h4>Session {idx + 1}</h4>
+                    <p><strong>Start:</strong> {session.sessionStart}</p>
+                    <p><strong>End:</strong> {session.sessionEnd}</p>
+                    <p><strong>Total Work:</strong> {session.totalWorkDuration} ms</p>
+                    <p><strong>Total Pause:</strong> {session.pauseDuration} ms</p>
+                    <p><strong>Pause Count:</strong> {session.pauseCount}</p>
+
+                    <h5>Logs:</h5>
+                    <ul className="logs-list">
+                      {session.logs?.map((log, i) => (
+                        <li key={i} className="log-item">
+                          <p><strong>Type:</strong> {log.type}</p>
+                          <p><strong>Note:</strong> {log.note}</p>
+                          <p><strong>Time:</strong> {log.time}</p>
+                          {log.duration && <p><strong>Duration:</strong> {log.duration} ms</p>}
                         </li>
                       ))}
                     </ul>
-                  </details>
-                </li>
-              ))}
-            </ul>
-            <button className="close-btn" onClick={() => setSelectedUser(null)}>
-              Close
-            </button>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       )}

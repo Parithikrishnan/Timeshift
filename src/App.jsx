@@ -35,32 +35,61 @@ function App() {
 
   if (loading) return <div>Loading...</div>;
 
-  // Check if current user is admin by email
+  // Define admin check
   const isAdmin = user?.email === "admin@sk.in";
 
   return (
     <Router>
       <Routes>
+        {/* Login Page */}
         <Route
           path="/login"
-          element={!user ? (
-            <Login onLogin={handleLogin} />
-          ) : (
-            <Navigate to={isAdmin ? "/admin" : "/dashboard"} />
-          )}
+          element={
+            !user ? (
+              <Login onLogin={handleLogin} />
+            ) : (
+              <Navigate to={isAdmin ? "/admin" : "/dashboard"} />
+            )
+          }
         />
+
+        {/* Dashboard for normal users */}
         <Route
           path="/dashboard"
-          element={user && !isAdmin ? <Dashboard user={user} /> : <Navigate to="/login" />}
+          element={
+            user ? (
+              isAdmin ? <Navigate to="/admin" /> : <Dashboard user={user} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
+
+        {/* Time Tracker for normal users */}
         <Route
           path="/time-tracker"
-          element={user && !isAdmin ? <TimeTracker user={user} /> : <Navigate to="/login" />}
+          element={
+            user ? (
+              isAdmin ? <Navigate to="/admin" /> : <TimeTracker user={user} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
+
+        {/* Admin Page */}
         <Route
           path="/admin"
-          element={user && isAdmin ? <Admin user={user} /> : <Navigate to="/login" />}
+          element={
+            user ? (
+              isAdmin ? <Admin user={user} /> : <Navigate to="/dashboard" />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
+
+        {/* Default → login */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
