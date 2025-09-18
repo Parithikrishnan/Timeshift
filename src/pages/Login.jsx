@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import "../styles/Login.css";
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin(email, password); 
+    setError(""); // reset error before new login attempt
+    onLogin(email, password, setError);
   };
 
   return (
@@ -39,6 +40,8 @@ function Login({ onLogin }) {
             />
             <label>Password</label>
           </div>
+
+          {error && <p className="error-message">{error}</p>}
 
           <button type="submit" className="auth-btn">Login</button>
         </form>

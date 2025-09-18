@@ -17,25 +17,24 @@ function App() {
       setUser(currentUser);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
   // Login function
-  const handleLogin = async (email, password) => {
+  const handleLogin = async (email, password, setError) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       setUser(userCredential.user);
       console.log("Logged in user:", userCredential.user);
     } catch (error) {
       console.error("Login error:", error.message);
-      alert(error.message);
+      setError("Invalid email or password. Please try again.");
     }
   };
 
   if (loading) return <div>Loading...</div>;
 
-  // Define admin check
+  // Admin check
   const isAdmin = user?.email === "admin@sk.in";
 
   return (
@@ -65,7 +64,7 @@ function App() {
           }
         />
 
-        {/* Time Tracker for normal users */}
+        {/* Time Tracker */}
         <Route
           path="/time-tracker"
           element={

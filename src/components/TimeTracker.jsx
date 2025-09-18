@@ -1,4 +1,3 @@
-// ...other imports
 import React, { useState } from "react";
 import "../styles/TimeTracker.css";
 import { db } from "../firebase"; 
@@ -27,7 +26,6 @@ function TimeTracker({ user }) {
     return `${hrs}h ${mins}m ${secs}s`;
   };
 
-  // Get date in DD/MM/YYYY format
   const getTodayDate = () => {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, "0");
@@ -64,23 +62,21 @@ function TimeTracker({ user }) {
 
   const submitModal = () => {
     const now = new Date();
+
     if (modalAction === "Pause") {
       setPauseStart(now);
       setIsPaused(true);
-      setPauseCount((prev) => prev + 1);
-      const newLog = { type: "Pause", time: now.toLocaleTimeString(), note: modalNote };
-      setLogs((prev) => [...prev, newLog]);
+      setPauseCount(prev => prev + 1);
+      setLogs(prev => [...prev, { type: "Pause", time: now.toLocaleTimeString(), note: modalNote }]);
     } else if (modalAction === "Clock Out") {
       const workDuration = now - startTime - pauseDuration;
       const newLog = { type: "Clock Out", time: now.toLocaleTimeString(), note: modalNote, duration: workDuration };
       const fullSession = [...logs, newLog];
-      setLogs(fullSession);
-      setTotalDuration(workDuration);
 
-      // Save session with date in DD/MM/YYYY format
+      // Save session
       saveSession({
         user: user.email,
-        date: getTodayDate(),  // <-- Human-readable date
+        date: getTodayDate(),
         sessionStart: startTime.toLocaleTimeString(),
         sessionEnd: now.toLocaleTimeString(),
         totalWorkDuration: workDuration,
@@ -89,14 +85,15 @@ function TimeTracker({ user }) {
         logs: fullSession,
       });
 
-      // Reset
+      // Update state for display, then reset for next session
+      setLogs(fullSession);
+      setTotalDuration(workDuration);
       setIsRunning(false);
       setIsPaused(false);
       setStartTime(null);
       setPauseStart(null);
       setPauseDuration(0);
       setPauseCount(0);
-      setTotalDuration(0);
     }
 
     setModalVisible(false);
@@ -106,10 +103,9 @@ function TimeTracker({ user }) {
     if (!isPaused) return;
     const now = new Date();
     const pauseDiff = now - pauseStart;
-    setPauseDuration((prev) => prev + pauseDiff);
+    setPauseDuration(prev => prev + pauseDiff);
     setIsPaused(false);
-    const newLog = { type: "Resume", time: now.toLocaleTimeString(), note: "Work resumed" };
-    setLogs((prev) => [...prev, newLog]);
+    setLogs(prev => [...prev, { type: "Resume", time: now.toLocaleTimeString(), note: "Work resumed" }]);
   };
 
   return (
@@ -123,6 +119,7 @@ function TimeTracker({ user }) {
           {isPaused && <button className="btn resume" onClick={handleResume}>Resume</button>}
           {isRunning && <button className="btn stop" onClick={() => openModal("Clock Out")}>Clock Out</button>}
         </div>
+
         <div className="summary">
           <h2>Summary</h2>
           <p><span>Start Time:</span> {startTime ? startTime.toLocaleTimeString() : "--"}</p>
@@ -153,6 +150,7 @@ function TimeTracker({ user }) {
       {modalVisible && (
         <div className="modal-backdrop">
           <div className="modal">
+            <span className="modal-close" onClick={() => setModalVisible(false)}>&#10006;</span>
             <h3>{modalAction} Note</h3>
             <textarea
               placeholder="Describe your task..."

@@ -69,38 +69,40 @@ function Admin() {
 
       {/* Modal */}
       {selectedUser && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
           <div className="modal-content">
-            <button className="close-btn" onClick={closeModal}>✖</button>
+            <span className="modal-close" onClick={closeModal}>&#10006;</span>
             <h2>{selectedUser}</h2>
 
-            {Object.keys(employees[selectedUser]).map((date) => (
-              <div key={date} className="date-group">
-                <h3>Date: {date}</h3>
-                {employees[selectedUser][date].map((session, idx) => (
-                  <div key={session.id} className="session-card">
-                    <h4>Session {idx + 1}</h4>
-                    <p><strong>Start:</strong> {session.sessionStart}</p>
-                    <p><strong>End:</strong> {session.sessionEnd}</p>
-                    <p><strong>Total Work:</strong> {session.totalWorkDuration} ms</p>
-                    <p><strong>Total Pause:</strong> {session.pauseDuration} ms</p>
-                    <p><strong>Pause Count:</strong> {session.pauseCount}</p>
+            <div className="sessions-wrapper">
+              {Object.keys(employees[selectedUser]).map((date) => (
+                <div key={date} className="date-group">
+                  <h3>Date: {date}</h3>
+                  {employees[selectedUser][date].map((session, idx) => (
+                    <div key={session.id} className="session-card">
+                      <h4>Session {idx + 1}</h4>
+                      <p><strong>Start:</strong> {session.sessionStart}</p>
+                      <p><strong>End:</strong> {session.sessionEnd}</p>
+                      <p><strong>Total Work:</strong> {session.totalWorkDuration} ms</p>
+                      <p><strong>Total Pause:</strong> {session.pauseDuration} ms</p>
+                      <p><strong>Pause Count:</strong> {session.pauseCount}</p>
 
-                    <h5>Logs:</h5>
-                    <ul className="logs-list">
-                      {session.logs?.map((log, i) => (
-                        <li key={i} className="log-item">
-                          <p><strong>Type:</strong> {log.type}</p>
-                          <p><strong>Note:</strong> {log.note}</p>
-                          <p><strong>Time:</strong> {log.time}</p>
-                          {log.duration && <p><strong>Duration:</strong> {log.duration} ms</p>}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            ))}
+                      <h5>Logs:</h5>
+                      <ul className="logs-list">
+                        {session.logs?.map((log, i) => (
+                          <li key={i} className="log-item">
+                            <p><strong>Type:</strong> {log.type}</p>
+                            <p><strong>Note:</strong> {log.note}</p>
+                            <p><strong>Time:</strong> {log.time}</p>
+                            {log.duration && <p><strong>Duration:</strong> {log.duration} ms</p>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
